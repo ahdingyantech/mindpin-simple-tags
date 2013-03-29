@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 require 'mindpin_simple_tags/tag'
 require 'mindpin_simple_tags/tagging'
 

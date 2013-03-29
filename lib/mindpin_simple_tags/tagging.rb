@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 module MindpinSimpleTags
   class Tagging < ActiveRecord::Base
     attr_accessible :tag, :taggable, :user

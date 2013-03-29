@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 module MindpinSimpleTags
   class Tag < ActiveRecord::Base
     attr_accessible :name
