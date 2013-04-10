@@ -4,7 +4,67 @@ mindpin-simple-tags
 define simpe tags logic for mindpin products
 
 
-# TODO
-使用说明
-配置说明
-....
+# 使用说明
+
+### 引入 gem
+
+```
+# Gemfile
+  gem 'mindpin-simple-tags',
+      :git => 'git://github.com/mindpin/mindpin-simple-tags.git',
+      :tag => '0.0.1'
+```
+
+### 增加 migration
+
+```ruby
+  create_table :tags do |t|
+    t.string :name
+    t.timestamps
+  end
+
+  create_table :taggings do |t|
+    t.integer :tag_id
+    t.integer :taggable_id
+    t.string  :taggable_type
+    t.integer :user_id
+    t.timestamps
+  end
+
+  add_index :taggings, :tag_id
+  add_index :taggings, [:taggable_id, :taggable_type]
+```
+
+### 增加声明
+
+```
+class Book < ActiveRecord::Base
+  simple_taggable
+end
+```
+
+### 私有 tag
+```
+book.set_tag_list('编程,java，api 教程')
+book.private_tags(book.creator).map(&:name)  # => ['编程','java','api','教程']
+
+book.set_tag_list('编程,java，api 教程', :user => user)
+book.private_tags(user)          # => ['编程','java','api','教程']
+```
+
+### 两个或两个以上私有 tag,自动变为公有 tag
+```
+book.set_tag_list('java', :user => user_1)
+book.public_tags.map(&:name)     # => []
+book.set_tag_list('java', :user => user_2)
+book.public_tags.map(&:name)     # => ['java']
+```
+
+
+### 创建者创建的 私有 tag,自动变为公有 tag
+```
+book.set_tag_list('java')
+book.public_tags.map(&:name)    # => ['java']
+```
+
+
