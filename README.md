@@ -79,3 +79,12 @@ book.public_tags.map(&:name)   # => ['java']
 book.remove_public_tag('编程 api java')
 ```
 
+### 根据私有 tag 查询
+```
+Book.by_tag('java', :user => @user_1)
+```
+
+### 根据公有 tag 查询
+```
+Book.by_tag('java')
+```
