@@ -49,7 +49,7 @@ book.set_tag_list('编程,java，api 教程')
 book.private_tags(book.creator).map(&:name)  # => ['编程','java','api','教程']
 
 book.set_tag_list('编程,java，api 教程', :user => user)
-book.private_tags(user)          # => ['编程','java','api','教程']
+book.private_tags(user).map(&:name)          # => ['编程','java','api','教程']
 ```
 
 ### 两个或两个以上私有 tag,自动变为公有 tag
