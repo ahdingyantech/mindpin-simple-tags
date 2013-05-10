@@ -67,4 +67,15 @@ book.set_tag_list('java')
 book.public_tags.map(&:name)    # => ['java']
 ```
 
+### 设置私有tag,并强制设置为公共tag
+```
+# 通过 force_public 设置的公共tag,不会因为少于两人设置为私有tag,而被干掉
+book.set_tag_list('java',:user => user_1, :force_public => true)
+book.public_tags.map(&:name)   # => ['java']
+```
+
+### 删除公共tag
+```
+book.remove_public_tag('编程 api java')
+```
 
