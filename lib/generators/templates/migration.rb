@@ -11,6 +11,7 @@ class MindpinSimpleTagsMigration < ActiveRecord::Migration
       t.integer :taggable_id
       t.string  :taggable_type
       t.integer :user_id
+      t.boolean :is_force_public
       t.timestamps
     end
 

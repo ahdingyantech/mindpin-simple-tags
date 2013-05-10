@@ -295,6 +295,83 @@ describe MindpinSimpleTags do
           end
         end
       end
+
+      describe 'set_tag_list(tag_str, :user => user, :force_public => true)' do
+        before{
+          @book.set_tag_list("java", :user => @user_1, :force_public => true)
+        }
+
+        it{
+          @book.private_tags(@user_1).map(&:name).should =~ %w(java)
+        }
+
+        it{
+          @book.public_tags.map(&:name).should =~ %w(java)
+        }
+
+        describe '设置 公共 tag' do
+          before{
+            @book.set_tag_list("编程 api", :user => @creator)
+          }
+
+          it{
+            @book.private_tags(@creator).map(&:name).should =~ %w(编程 api)
+          }
+
+          it{
+            @book.public_tags.map(&:name).should =~ %w(java 编程 api)
+          }
+
+          describe '再次带 force_public 参数修改 tag' do
+            before{
+              @book.set_tag_list("编程 学习", :user => @user_1, :force_public => true)
+            }
+
+            it{
+              @book.private_tags(@user_1).map(&:name).should =~ %w(编程 学习)
+            }
+
+            it{
+              @book.public_tags.map(&:name).should =~ %w(java 编程 api 学习)
+            }
+
+            describe '删除 force_public_tag ' do
+              before{
+                @book.remove_public_tag('编程 api java')
+              }
+
+              it{
+                @book.public_tags.map(&:name).should =~ %w(学习)
+              }
+            end
+          end
+        end
+
+        describe '带 force_public 参数修改 tag' do
+          before{
+            @book.set_tag_list("编程 api", :user => @user_1, :force_public => true)
+            @book.reload
+          }
+
+          it{
+            @book.private_tags(@user_1).map(&:name).should =~ %w(编程 api)
+          }
+
+          it{
+            @book.public_tags.map(&:name).should =~ %w(java 编程 api)
+          }
+
+          describe '删除 force_public_tag ' do
+            before{
+              @book.remove_public_tag('编程 api')
+            }
+
+            it{
+              @book.public_tags.map(&:name).should =~ %w(java)
+            }
+          end
+        end
+      end
     end
 
     describe '根据TAG查询' do

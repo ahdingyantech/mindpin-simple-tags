@@ -1,7 +1,7 @@
 # -*- encoding : utf-8 -*-
 module MindpinSimpleTags
   class Tagging < ActiveRecord::Base
-    attr_accessible :tag, :taggable, :user
+    attr_accessible :tag, :taggable, :user, :is_force_public
 
     belongs_to :user
     belongs_to :tag, :class_name => 'MindpinSimpleTags::Tag'
@@ -10,7 +10,8 @@ module MindpinSimpleTags
     validates :tag, :taggable, :presence => true
 
     scope :without_user, :conditions => 'taggings.user_id IS NULL'
-    scope :with_user, :conditions => 'taggings.user_id IS NOT NULL'
+    scope :with_user,    :conditions => 'taggings.user_id IS NOT NULL'
+    scope :without_force_public, :conditions => 'taggings.is_force_public IS NOT TRUE'
 
     scope :by_user, lambda { | user | {:conditions => ['user_id = ?', user.id] } }
     scope :by_tag,  lambda { |  tag | {:conditions => ['tag_id = ?', tag.id] } }
@@ -40,7 +41,7 @@ module MindpinSimpleTags
 
       def _remove_public_tag(taggable, tag)
         return unless taggable.public_tags.include?(tag)
-        taggable.taggings.by_tag(tag).without_user.destroy_all
+        taggable.taggings.by_tag(tag).without_user.without_force_public.destroy_all
       end
 
     module TaggableMethods
@@ -68,7 +69,19 @@ module MindpinSimpleTags
 
         _set_private_tags(after_tags, user)
 
+        if options[:force_public]
+          _set_force_public_tags(after_tags)
+        end
+
         after_tags
+      end
+
+      def remove_public_tag(str)
+        tags = _get_by_str(str)
+
+        tags.each do |tag|
+          self.taggings.by_tag(tag).without_user.destroy_all
+        end
       end
 
       def private_tagged_count(tag)
@@ -99,6 +112,17 @@ module MindpinSimpleTags
           tag_names = str.downcase.split(/\s|,|，/).compact.uniq
           tag_names.map do |name|
             Tag.find_or_create_by_name(name)
+          end
+        end
+
+        def _set_force_public_tags(tags)
+          tags.each do |tag|
+            tagging = self.taggings.by_tag(tag).without_user.first
+            if tagging.blank?
+              self.taggings.create(:tag => tag, :is_force_public => true)
+            else
+              tagging.update_attributes(:is_force_public => true)
+            end
           end
         end
 
