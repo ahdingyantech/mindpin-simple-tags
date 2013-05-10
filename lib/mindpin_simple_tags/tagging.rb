@@ -129,7 +129,7 @@ module MindpinSimpleTags
       module ClassMethods
         def by_tag(tag_name, options = {})
           tag = Tag.by_name(tag_name).first
-          return [] if tag.blank?
+          return self.where(:id => -1) if tag.blank?
 
           user = options[:user]
           user_id_params = user.blank? ? nil : [nil, user.id]
