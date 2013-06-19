@@ -64,7 +64,9 @@ module MindpinSimpleTags
       end
 
       def set_tag_list(str, options = {})
-        user = options[:user] || self.creator
+        user = options[:user] || (
+          self.is_a?(User) ? self : self.creator
+        )
         after_tags = _get_by_str(str)
 
         _set_private_tags(after_tags, user)
@@ -89,7 +91,8 @@ module MindpinSimpleTags
       end
 
       def tagged_with_creator?(tag)
-        taggings.by_tag(tag).by_user(creator).present?
+        user = self.is_a?(User) ? self : self.creator
+        taggings.by_tag(tag).by_user(user).present?
       end
 
       private

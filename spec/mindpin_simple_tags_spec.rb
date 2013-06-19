@@ -27,6 +27,7 @@ class BookMigration < ActiveRecord::Migration
 end
 
 class User < ActiveRecord::Base
+  simple_taggable
 end
 
 class Book < ActiveRecord::Base
@@ -520,6 +521,21 @@ describe MindpinSimpleTags do
       end
     end
 
+  end
+
+  describe User do
+    before{
+      @user = User.create!(:name => 'user_1')
+      @user.set_tag_list("编程,java，api 教程")  
+    }
+
+    it{
+      @user.public_tags.map(&:name).should =~ ['编程','java','api','教程'] 
+    }
+
+    it{
+      @user.private_tags(@user).map(&:name).should =~ ['编程','java','api','教程'] 
+    }
   end
 
 end
