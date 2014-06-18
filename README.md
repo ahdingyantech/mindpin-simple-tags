@@ -12,7 +12,7 @@ define simpe tags logic for mindpin products
 # Gemfile
   gem 'mindpin-simple-tags',
       :git => 'git://github.com/mindpin/mindpin-simple-tags.git',
-      :tag => '0.0.2'
+      :tag => '1.0.1'
 ```
 
 ### 增加声明
