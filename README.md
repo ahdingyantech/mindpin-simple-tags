@@ -12,33 +12,24 @@ define simpe tags logic for mindpin products
 # Gemfile
   gem 'mindpin-simple-tags',
       :git => 'git://github.com/mindpin/mindpin-simple-tags.git',
-      :tag => '0.0.1'
-```
-
-### 增加 migration
-
-```ruby
-  create_table :tags do |t|
-    t.string :name
-    t.timestamps
-  end
-
-  create_table :taggings do |t|
-    t.integer :tag_id
-    t.integer :taggable_id
-    t.string  :taggable_type
-    t.integer :user_id
-    t.timestamps
-  end
-
-  add_index :taggings, :tag_id
-  add_index :taggings, [:taggable_id, :taggable_type]
+      :tag => '0.0.2'
 ```
 
 ### 增加声明
 
+在应用配置文件中关联对应的用户模型:
+
 ```
-class Book < ActiveRecord::Base
+MindpinSimpleTags.set_user_model(User)
+
+```
+
+在要启用tag功能的模型上:
+
+```
+class Book
+  include Mongoid::Document
+
   simple_taggable
 end
 ```

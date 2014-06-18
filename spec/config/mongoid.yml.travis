@@ -1,0 +1,6 @@
+test:
+  sessions:
+    default:
+      database: mindpin_simple_tags_mongoid_test
+      hosts:
+        - <%= ENV['TEST_DB_HOST'] || 'localhost' %>:27017

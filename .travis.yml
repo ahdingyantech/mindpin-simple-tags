@@ -5,10 +5,10 @@ rvm:
   - 2.0.0
 
 services:
-  - mysql
+  - mongodb
 
 before_script:
-  - cp spec/config/dbconfig.yaml.travis spec/config/dbconfig.yaml
+  - cp spec/config/mongoid.yml.travis spec/config/mongoid.yaml
 
 script:
   - bundle exec rspec spec

@@ -1,59 +1,12 @@
 # -*- encoding : utf-8 -*-
-require 'spec_helper.rb'
+require "spec_helper.rb"
 
-class UserMigration < ActiveRecord::Migration
-  def self.up
-    create_table :users, :force => true do |t|
-      t.string :name
-    end
-  end
-
-  def self.down
-    drop_table :users
-  end
-end
-
-class BookMigration < ActiveRecord::Migration
-  def self.up
-    create_table :books, :force => true do |t|
-      t.string :name
-      t.integer :creator_id
-    end
-  end
-
-  def self.down
-    drop_table :books
-  end
-end
-
-class User < ActiveRecord::Base
-  simple_taggable
-end
-
-class Book < ActiveRecord::Base
-  belongs_to :creator, :class_name => 'User'
-
-  simple_taggable
-end
 
 describe MindpinSimpleTags do
-  before(:all){
-    UserMigration.up
-    BookMigration.up
-    MindpinSimpleTagsMigration.up
-  }
-
-  after(:all){
-    UserMigration.down
-    BookMigration.down
-    MindpinSimpleTagsMigration.down
-  }
-
   describe Book do
     before{
       @user_1 = User.create!(:name => 'user_1')
       @user_2 = User.create!(:name => 'user_2')
-
     }
 
     describe '标记TAG' do
@@ -77,11 +30,11 @@ describe MindpinSimpleTags do
       describe 'media_resource_creator 可以给 media_resource 标记TAG。凡是creator标记的TAG，直接作为公共TAG' do
         context 'set_tag_list(str)' do
           before{
-            @book.set_tag_list("编程,java，api 教程")  
+            @book.set_tag_list("编程,java，api 教程")
           }
 
           it{
-            @book.public_tags.map(&:name).should =~ ['编程','java','api','教程'] 
+            @book.public_tags.map(&:name).should =~ ['编程','java','api','教程']
           }
 
           it{
@@ -95,11 +48,11 @@ describe MindpinSimpleTags do
 
         context 'set_tag_list(str,:user=> creator)' do
           before{
-            @book.set_tag_list("编程,java，api 教程", :user => @book.creator)  
+            @book.set_tag_list("编程,java，api 教程", :user => @book.creator)
           }
 
           it{
-            @book.public_tags.map(&:name).should =~ ['编程','java','api','教程'] 
+            @book.public_tags.map(&:name).should =~ ['编程','java','api','教程']
           }
 
           it{
@@ -111,7 +64,7 @@ describe MindpinSimpleTags do
           }
         end
       end
-      
+
       describe '所有非 media_resource_creator 的其他人，都可以给 media_resource 标记TAG。凡是非 media_resource_creator 标记的TAG，不作为公共TAG，只影响标记者的查询结果。' do
         context 'set_tag_list(str,:user => user)' do
           before{
@@ -123,7 +76,7 @@ describe MindpinSimpleTags do
           }
 
           it{
-            @book.private_tags(@user_1).map(&:name).should =~ ['编程','java','api','教程'] 
+            @book.private_tags(@user_1).map(&:name).should =~ ['编程','java','api','教程']
           }
         end
       end
@@ -135,11 +88,11 @@ describe MindpinSimpleTags do
         }
 
         it{
-          @book.public_tags.map(&:name).should =~ ['java','api'] 
+          @book.public_tags.map(&:name).should =~ ['java','api']
         }
 
         it{
-          @book.private_tags(@user_1).map(&:name).should =~ ['编程','java','api'] 
+          @book.private_tags(@user_1).map(&:name).should =~ ['编程','java','api']
         }
 
         it{
@@ -174,7 +127,7 @@ describe MindpinSimpleTags do
             }
 
             it{
-              @book.private_tags(@user_2).map(&:name).should =~ ['java'] 
+              @book.private_tags(@user_2).map(&:name).should =~ ['java']
             }
 
             it{
@@ -379,7 +332,7 @@ describe MindpinSimpleTags do
       before{
         @creator_1 = User.create!(:name => 'creator_1')
         @book_1 = Book.create!(:name => 'book_1', :creator => @creator_1)
-        
+
         @creator_2 = User.create!(:name => 'creator_2')
         @book_2 = Book.create!(:name => 'book_2', :creator => @creator_2)
 
@@ -396,7 +349,7 @@ describe MindpinSimpleTags do
         @book_2.set_tag_list('java,api', :user => @user_1)
 
         @book_2.set_tag_list('java', :user => @user_2)
-        @book_3.set_tag_list('java', :user => @user_2)      
+        @book_3.set_tag_list('java', :user => @user_2)
       }
 
       it{
@@ -452,7 +405,7 @@ describe MindpinSimpleTags do
         }
 
         it{
-          @book_1.private_tagged_count(@tag_api).should == 1 
+          @book_1.private_tagged_count(@tag_api).should == 1
         }
 
         it{
@@ -526,15 +479,15 @@ describe MindpinSimpleTags do
   describe User do
     before{
       @user = User.create!(:name => 'user_1')
-      @user.set_tag_list("编程,java，api 教程")  
+      @user.set_tag_list("编程,java，api 教程")
     }
 
     it{
-      @user.public_tags.map(&:name).should =~ ['编程','java','api','教程'] 
+      @user.public_tags.map(&:name).should =~ ['编程','java','api','教程']
     }
 
     it{
-      @user.private_tags(@user).map(&:name).should =~ ['编程','java','api','教程'] 
+      @user.private_tags(@user).map(&:name).should =~ ['编程','java','api','教程']
     }
   end
 

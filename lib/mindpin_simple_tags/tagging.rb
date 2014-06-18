@@ -1,24 +1,43 @@
 # -*- encoding : utf-8 -*-
 module MindpinSimpleTags
-  class Tagging < ActiveRecord::Base
-    attr_accessible :tag, :taggable, :user, :is_force_public
+  class Tagging
+    include Mongoid::Document
+    include Mongoid::Timestamps
 
-    belongs_to :user
+    field :is_force_public, :type => String
+
     belongs_to :tag, :class_name => 'MindpinSimpleTags::Tag'
     belongs_to :taggable, :polymorphic => true
 
     validates :tag, :taggable, :presence => true
 
-    scope :without_user, :conditions => 'taggings.user_id IS NULL'
-    scope :with_user,    :conditions => 'taggings.user_id IS NOT NULL'
-    scope :without_force_public, :conditions => 'taggings.is_force_public IS NOT TRUE'
+    scope :without_user, proc {
+      where :user_id => nil
+    }
 
-    scope :by_user, lambda { | user | {:conditions => ['user_id = ?', user.id] } }
-    scope :by_tag,  lambda { |  tag | {:conditions => ['tag_id = ?', tag.id] } }
-    scope :by_tags, lambda { | tags | {:conditions => ['tag_id in (?)', tags.map(&:id)] } }
+    scope :with_user, proc {
+      where :user_id.ne => nil
+    }
+
+    scope :without_force_public, proc {
+      where :is_force_public.ne => true
+    }
+
+    scope :by_user, lambda {|user|
+      where :user_id => user.id
+    }
+
+    scope :by_tag,  lambda {|tag|
+      where :tag_id => tag.id
+    }
+
+    scope :by_tags, lambda {|tags|
+      where :tag_id.in => tags.map(&:id)
+    }
 
     after_save :update_public_tags
     after_destroy :update_public_tags
+
     def update_public_tags
       return if self.user_id.blank?
 
@@ -48,19 +67,29 @@ module MindpinSimpleTags
       extend ActiveSupport::Concern
 
       included do
-        self.has_many :taggings, :class_name => 'MindpinSimpleTags::Tagging', :as => :taggable
-        self.has_many :public_tags, :through => :taggings,
-                                    :class_name => 'MindpinSimpleTags::Tag',
-                                    :source => :tag,
-                                    :conditions => 'taggings.user_id IS NULL'
+        self.has_many :taggings,
+                      :class_name => 'MindpinSimpleTags::Tagging',
+                      :as         => :taggable
+      end
+
+      def public_tags
+        tag_ids = Tagging.where(
+          :user_id       => nil,
+          :taggable_type => self.class.name,
+          :taggable_id   => self.id
+        ).pluck(:tag_id).uniq
+
+        Tag.where(:id.in => tag_ids)
       end
 
       def private_tags(user)
-        Tag.joins(:taggings).where(:taggings => {
+        tag_ids = Tagging.where(
           :user_id       => user.id,
           :taggable_type => self.class.name,
           :taggable_id   => self.id
-        })
+        ).pluck(:tag_id).uniq
+
+        Tag.where(:id.in => tag_ids)
       end
 
       def set_tag_list(str, options = {})
@@ -114,7 +143,7 @@ module MindpinSimpleTags
         def _get_by_str(str)
           tag_names = str.downcase.split(/\s|,|，/).compact.uniq
           tag_names.map do |name|
-            Tag.find_or_create_by_name(name)
+            Tag.find_or_create_by(:name => name)
           end
         end
 
@@ -137,11 +166,13 @@ module MindpinSimpleTags
           user = options[:user]
           user_id_params = user.blank? ? nil : [nil, user.id]
 
-          self.joins(:taggings).where(:taggings => {
-            :user_id => user_id_params,
-            :tag_id  => tag.id
-          })
+          taggable_ids = Tagging.where(
+            :user_id       => user_id_params,
+            :tag_id        => tag.id,
+            :taggable_type => self.class.name
+          ).pluck(:taggable_id).uniq
 
+          self.where(:id.in => taggable_ids)
         end
       end
 

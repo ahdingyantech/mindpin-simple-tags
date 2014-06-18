@@ -2,29 +2,37 @@
 require 'coveralls'
 Coveralls.wear!
 
-require 'mysql2'
-require 'active_record'
-require 'active_support/all'
-require 'mindpin-simple-tags'
-
 require 'config/db_init'
-require 'generators/templates/migration'
+require 'mindpin-simple-tags'
+require "pry"
 
-require 'database_cleaner'
+class User
+  include Mongoid::Document
+  include Mongoid::Timestamps
+  simple_taggable
+
+  field :name, :type => String
+end
+
+MindpinSimpleTags.set_user_model(User)
+
+class Book
+  include Mongoid::Document
+  include Mongoid::Timestamps
+  simple_taggable
+
+  belongs_to :creator, :class_name => 'User'
+
+  field :name, :type => String
+end
+
+
 RSpec.configure do |config|
-  config.order = "random"
-
-  # database_cleaner
-  config.before(:suite) do
-    DatabaseCleaner.strategy = :transaction
-    DatabaseCleaner.clean_with(:truncation)
-  end
-
-  config.before(:each) do
-    DatabaseCleaner.start
+  config.before(:all) do
+    Mongoid.purge!
   end
 
   config.after(:each) do
-    DatabaseCleaner.clean
+    Mongoid.purge!
   end
 end

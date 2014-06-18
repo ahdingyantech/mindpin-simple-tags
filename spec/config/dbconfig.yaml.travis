@@ -1,5 +1,0 @@
-test:
-  adapter: mysql2
-  database: mindpin-simple-tags-test
-  encoding: utf8
-  username: root
