@@ -135,7 +135,7 @@ module MindpinSimpleTags
           return self.where(:id => -1) if tag.blank?
 
           user = options[:user]
-          user_id_params = user.blank? ? nil : [nil, user.id]
+          user_id_params = user.blank? ? nil : [user.id]
 
           self.joins(:taggings).where(:taggings => {
             :user_id => user_id_params,
